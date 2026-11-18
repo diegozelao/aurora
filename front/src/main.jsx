@@ -111,6 +111,12 @@ export function App() {
     return () => { clearInterval(timer); document.removeEventListener('visibilitychange', visible); clearTimeout(syncTimer.current); clearTimeout(connectTimer.current); clearTimeout(copyTimer.current); socket.current?.close(); rtc.current?.close(); Object.values(sources.current).forEach(stopTracks); };
   }, []);
   useEffect(() => { const container = chatMessagesRef.current; if (container) container.scrollTop = container.scrollHeight; }, [messages]);
+  useEffect(() => {
+    if (!focusedPerson) return;
+    const person = people.find(item => item.id === focusedPerson);
+    const cameraStream = person?.id === self ? local.camera : person?.media?.camera && remote[person.id]?.[person.media.camera];
+    if (!cameraStream) setFocusedPerson(null);
+  }, [focusedPerson, people, local.camera, remote, self]);
   function switchRoom(target) {
     if (target === room) return;
     setNotice(`Entrando em ${target.toLowerCase()}. Microfone, câmera e tela foram desligados.`);
@@ -129,7 +135,18 @@ export function App() {
     let stream;
     try {
       const media = navigator.mediaDevices;
-      stream = kind === 'screen' ? await media.getDisplayMedia({ video: true, audio: true }) : await media.getUserMedia(kind === 'mic' ? { audio: { echoCancellation: true, noiseSuppression: true }, video: false } : { video: true, audio: false });
+      if (kind === 'screen') {
+        try {
+          stream = await media.getDisplayMedia({ video: true, audio: true });
+        } catch (audioError) {
+          const audioUnavailable = /audio source|audio capture|could not start/i.test(`${audioError.name} ${audioError.message}`);
+          if (!audioUnavailable) throw audioError;
+          setNotice('O compartilhamento foi iniciado sem áudio. Para transmitir o som do jogo, selecione uma aba do navegador e ative “Compartilhar áudio”.');
+          stream = await media.getDisplayMedia({ video: true, audio: false });
+        }
+      } else {
+        stream = await media.getUserMedia(kind === 'mic' ? { audio: { echoCancellation: true, noiseSuppression: true }, video: false } : { video: true, audio: false });
+      }
       if (generation.current !== token || socket.current?.readyState !== WebSocket.OPEN) { stopTracks(stream); return; }
       rtc.current.setSource(kind, stream); sources.current[kind] = stream;
       stream.getTracks().forEach(track => { track.onended = () => { if (sources.current[kind] === stream) stopSource(kind); }; });
@@ -160,7 +177,7 @@ export function App() {
   </form></main>;
   return <main className="app-shell">
     <header className="app-header"><div className="brand"><span className="brand-icon"><MonitorUp size={21} /></span><div><strong>Aurora<span className="version">{APP_VERSION}</span></strong><small className={`connection ${connected ? 'online' : ''}`}><i />{statusText}</small></div></div>
-      <div className="header-room-tools"><nav className="room-switch" aria-label="Salas">{ROOMS.map((item, index) => <button key={item} className={`room-tab ${room === item ? 'selected' : ''}`} aria-pressed={room === item} onClick={() => switchRoom(item)}><span className="room-number">0{index + 1}</span>{item}</button>)}</nav><span className="header-room-spacer" aria-hidden="true" /><button className="button sync" onClick={() => synchronize()} disabled={syncing || status === 'connecting'}><RefreshCw size={16} className={syncing ? 'spin' : ''} />{syncing ? 'Atualizando…' : status === 'disconnected' ? 'Reconectar' : 'Atualizar sala'}</button><span className="header-online-count"><Users size={15} />{people.length} online</span></div>
+      <div className="header-room-tools"><nav className="room-switch" aria-label="Salas">{ROOMS.map((item, index) => <button key={item} className={`room-tab ${room === item ? 'selected' : ''}`} aria-pressed={room === item} onClick={() => switchRoom(item)}><span className="room-number">0{index + 1}</span>{item}</button>)}</nav><span className="header-room-spacer" aria-hidden="true" /><button className="button sync icon-only" aria-label={status === 'disconnected' ? 'Reconectar' : 'Atualizar sala'} title={status === 'disconnected' ? 'Reconectar' : 'Atualizar sala'} onClick={() => synchronize()} disabled={syncing || status === 'connecting'}><RefreshCw size={17} className={syncing ? 'spin' : ''} /></button><span className="header-online-count"><Users size={15} />{people.length} online</span></div>
       <div className="header-actions"><button className="button" onClick={copyInvite} disabled={!connected}>{copied ? <Check size={16} /> : <Copy size={16} />}<span>{copied ? 'Link copiado' : 'Convidar'}</span></button><button className="button leave" onClick={() => { disconnect(); setEntered(false); setStatus('idle'); setNotice(''); }}><LogOut size={16} /><span>Sair</span></button></div>
     </header>
     <div className="workspace"><section className="stage">
@@ -182,10 +199,7 @@ export function App() {
       {!people.length && <div className="empty-stage"><Users size={32} /><p>{status === 'connecting' ? 'Conectando à sala…' : 'Reconecte para ver os participantes.'}</p></div>}
       <div className="audio-streams">{people.filter(person => person.id !== self && person.media?.mic && getStream(person, 'mic')).map(person => <Media key={`${person.id}-${person.media.mic}`} audio stream={getStream(person, 'mic')} muted={!sound} volume={volume} />)}</div>
     </section>
-    <aside className="participants"><section className="participants-section"><div className="aside-title"><h2>Na sala <span>{people.length}</span></h2><Users size={18} /></div><div className="participants-list">
-      {people.map(person => <div className="participant" key={person.id}><Avatar name={person.name} /><div><strong>{person.name}{person.id === self ? ' (você)' : ''}</strong><small>{person.media?.screen ? 'Compartilhando tela' : person.media?.mic ? 'Microfone ligado' : 'Microfone desligado'}</small></div>{person.media?.screen && <MonitorUp size={16} className="purple" />}</div>)}
-      {people.length === 1 && <p className="alone muted">Convide alguém pelo link desta sala.</p>}</div></section>
-      <section className="chat-panel"><div ref={chatMessagesRef} className="chat-messages">{messages.map((message, index) => <div className={`chat-message ${message.from === self ? 'mine' : ''}`} key={`${message.at}-${index}`}><strong>{message.name}</strong><p>{message.text}</p></div>)}</div><form className="chat-form" onSubmit={sendChat}><div className="chat-composer"><input value={messageText} onChange={event => setMessageText(event.target.value)} maxLength={1000} placeholder="Digite uma mensagem…" aria-label="Mensagem" disabled={!connected} /><button className="send-message" type="submit" aria-label="Enviar mensagem" title="Enviar mensagem" disabled={!connected || !messageText.trim()}><Send size={16} /></button></div></form></section>
+    <aside className="participants"><section className="chat-panel"><div ref={chatMessagesRef} className="chat-messages">{messages.map((message, index) => <div className={`chat-message ${message.from === self ? 'mine' : ''}`} key={`${message.at}-${index}`}><strong>{message.name}</strong><p>{message.text}</p></div>)}</div><form className="chat-form" onSubmit={sendChat}><div className="chat-composer"><input value={messageText} onChange={event => setMessageText(event.target.value)} maxLength={1000} placeholder="Digite uma mensagem…" aria-label="Mensagem" disabled={!connected} /><button className="send-message" type="submit" aria-label="Enviar mensagem" title="Enviar mensagem" disabled={!connected || !messageText.trim()}><Send size={16} /></button></div></form></section>
     </aside></div>
     <footer className="control-bar"><div className="output-controls"><button className={`control ${!sound ? 'off' : ''}`} aria-label={sound ? 'Silenciar som da sala' : 'Ativar som da sala'} aria-pressed={!sound} onClick={() => setSound(value => !value)}>{sound ? <Volume2 size={19} /> : <VolumeX size={19} />}</button><label htmlFor="volume">Volume <span>{Math.round(volume * 100)}%</span><input id="volume" type="range" min="0" max="100" value={Math.round(volume * 100)} onChange={event => setVolume(Number(event.target.value) / 100)} /></label></div>
       <div className="media-controls"><button className={`control ${local.mic ? 'active' : 'off'}`} disabled={!connected || pending.mic} aria-pressed={Boolean(local.mic)} onClick={() => toggleSource('mic')}>{local.mic ? <Mic size={19} /> : <MicOff size={19} />}<span>{pending.mic ? 'Aguardando…' : local.mic ? 'Desligar mic' : 'Ativar mic'}</span></button>
