@@ -20,7 +20,7 @@ COPY package*.json ./
 COPY back/package*.json back/
 RUN cd back && npm install --omit=dev
 
-COPY --from=build /app/back ./back
+COPY --from=build /app/back/server.js ./back/server.js
 COPY --from=build /app/front/dist ./front/dist
 
 EXPOSE 80
