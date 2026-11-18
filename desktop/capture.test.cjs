@@ -8,7 +8,7 @@ test('capture forwards video, disables unsupported audio, and reports original f
   let fail = false;
   const stream = {};
   const context = vm.createContext({
-    location: { origin: 'https://test.ddtech.cloud' },
+    location: { origin: 'https://aurora.ddtech.cloud' },
     navigator: { mediaDevices: { getDisplayMedia: async (options) => { calls.push(options); if (fail) throw failure; return stream; } } },
     window: { addEventListener: (type, fn) => listeners.set(type, fn), dispatchEvent: event => listeners.get(event.type)?.(event) },
     CustomEvent: class { constructor(type, data) { this.type = type; this.detail = data.detail; } },

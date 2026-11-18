@@ -1,6 +1,6 @@
 # Aurora 0.1.5
 
-O aplicativo continua carregando a interface publicada em https://test.ddtech.cloud/.
+O aplicativo continua carregando a interface publicada em https://aurora.ddtech.cloud/.
 
 - Três salas, com troca direta mantendo o nome. Ao mudar de sala, câmera, microfone e compartilhamento são encerrados.
 - Atualização manual com timeout, atualização automática a cada 15 segundos e reconexão acionada pelo usuário.

@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const permissions = require('./permissions.cjs');
 test('Electron screen permission accepted; physical media and foreign origins denied', () => {
-  const origin = 'https://test.ddtech.cloud';
+  const origin = 'https://aurora.ddtech.cloud';
   assert.equal(permissions.check('media', origin), true);
   assert.equal(permissions.request('media', origin, {mediaTypes: []}), true);
   for (const mediaTypes of [['audio'], ['video'], ['audio', 'video']]) assert.equal(permissions.request('media', origin, {mediaTypes}), false);
