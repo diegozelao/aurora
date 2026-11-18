@@ -2,12 +2,14 @@ import { createRoot } from 'react-dom/client';
 import { useEffect, useRef, useState } from 'react';
 import { Camera, CameraOff, Check, Copy, LogOut, Maximize2, Mic, MicOff, MonitorUp, RefreshCw, Send, Users, Volume2, VolumeX, X } from 'lucide-react';
 import { RoomPeers } from './rtc.js';
+import { invoke } from '@tauri-apps/api/core';
 import './room.css';
 import './media-stage.css';
 import './header-layout.css';
+import './brand.css';
 
 export const ROOMS = ['Sala principal', 'Sala de reuniões', 'Sala de apresentação'];
-export const APP_VERSION = '0.2.0';
+export const APP_VERSION = '2.0.0';
 const iceServers = (() => {
   const value = import.meta.env.VITE_ICE_SERVERS;
   if (!value) return [{ urls: 'stun:stun.l.google.com:19302' }];
@@ -16,6 +18,7 @@ const iceServers = (() => {
 })();
 const initialRoom = () => { const value = new URLSearchParams(location.search).get('room'); return ROOMS.includes(value) ? value : ROOMS[0]; };
 const stopTracks = stream => stream?.getTracks().forEach(track => { track.onended = null; track.stop(); });
+const runningInTauri = () => Boolean(window.__TAURI_INTERNALS__);
 function Avatar({ name }) { return <span className="avatar" aria-hidden="true">{name.trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase()}</span>; }
 function Media({ stream, audio = false, muted = true, volume = 1 }) {
   const ref = useRef(); const [blocked, setBlocked] = useState(false);
@@ -136,12 +139,27 @@ export function App() {
     try {
       const media = navigator.mediaDevices;
       if (kind === 'screen') {
+        if (runningInTauri()) {
+          const nativeSources = await invoke('list_capture_sources');
+          if (!nativeSources?.length) throw new Error('Nenhuma janela ou tela disponível para captura nativa. Verifique a permissão de Gravação de Tela.');
+          setNotice(`${nativeSources.length} fonte(s) nativa(s) encontrada(s). Selecione a janela ou tela no próximo seletor.`);
+        }
         try {
-          stream = await media.getDisplayMedia({ video: true, audio: true });
+          stream = await media.getDisplayMedia({
+            video: { displaySurface: 'monitor' },
+            audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+            systemAudio: 'include',
+            surfaceSwitching: 'include',
+            selfBrowserSurface: 'exclude',
+            monitorTypeSurfaces: 'include'
+          });
+          if (!stream.getAudioTracks?.().length) {
+            setNotice('A imagem foi compartilhada, mas o áudio não veio da fonte. Na próxima tentativa, escolha uma aba/janela com áudio e marque “Compartilhar áudio”.');
+          }
         } catch (audioError) {
           const audioUnavailable = /audio source|audio capture|could not start/i.test(`${audioError.name} ${audioError.message}`);
           if (!audioUnavailable) throw audioError;
-          setNotice('O compartilhamento foi iniciado sem áudio. Para transmitir o som do jogo, selecione uma aba do navegador e ative “Compartilhar áudio”.');
+          setNotice('O compartilhamento foi iniciado sem áudio. Para transmitir o som, selecione uma aba/janela compatível e ative “Compartilhar áudio” no seletor do navegador.');
           stream = await media.getDisplayMedia({ video: true, audio: false });
         }
       } else {
@@ -151,7 +169,7 @@ export function App() {
       rtc.current.setSource(kind, stream); sources.current[kind] = stream;
       stream.getTracks().forEach(track => { track.onended = () => { if (sources.current[kind] === stream) stopSource(kind); }; });
       setLocal({ ...sources.current }); publishMedia();
-    } catch (e) { stopTracks(stream); if (token === generation.current) { const label = kind === 'screen' ? 'o compartilhamento' : kind === 'mic' ? 'o microfone' : 'a câmera'; const reason = e.name === 'NotAllowedError' ? 'A permissão foi negada.' : e.name === 'NotFoundError' ? 'Nenhum dispositivo compatível foi encontrado.' : e.message; setError(`Não foi possível ativar ${label} ${reason}`); } }
+    } catch (e) { stopTracks(stream); if (token === generation.current) { const label = kind === 'screen' ? 'o compartilhamento' : kind === 'mic' ? 'o microfone' : 'a câmera'; const errorName = e?.name || ''; const errorMessage = typeof e === 'string' ? e : e?.message || ''; const reason = errorName === 'NotAllowedError' ? 'A permissão foi negada.' : errorName === 'NotFoundError' ? 'Nenhum dispositivo compatível foi encontrado.' : errorMessage || 'Verifique as permissões e tente novamente.'; setError(`Não foi possível ativar ${label}: ${reason}`); } }
     finally { if (token === generation.current) { busy.current.delete(kind); setPending(current => ({ ...current, [kind]: false })); } }
   }
   async function copyInvite() {
@@ -170,13 +188,13 @@ export function App() {
   const statusText = connected ? 'Conectado' : status === 'connecting' ? 'Conectando…' : 'Desconectado';
 
   if (!entered) return <main className="entry"><form className="entry-card" onSubmit={event => { event.preventDefault(); if (name.trim()) connect(); }}>
-    <span className="brand-icon"><MonitorUp size={24} /></span><p className="eyebrow">AURORA ROOMS</p><h1>Um espaço para<br />compartilhar ideias.</h1><p className="muted">Entre com seu nome e escolha onde conversar.</p>
+    <img className="brand-logo" src="/aurora-logo.png" alt="Aurora" /><p className="eyebrow">AURORA ROOMS</p><h1>Um espaço para<br />compartilhar ideias.</h1><p className="muted">Entre com seu nome e escolha onde conversar.</p>
     <label htmlFor="name">Seu nome</label><input id="name" value={name} onChange={event => setName(event.target.value)} autoFocus maxLength={32} placeholder="Como podemos chamar você?" required />
     <label htmlFor="entry-room">Sala</label><select id="entry-room" value={room} onChange={event => setRoom(event.target.value)}>{ROOMS.map(item => <option key={item}>{item}</option>)}</select>
     <button className="primary" type="submit" disabled={!name.trim()}>Entrar na sala</button><small className="muted">Microfone e câmera começam desligados.</small>
   </form></main>;
   return <main className="app-shell">
-    <header className="app-header"><div className="brand"><span className="brand-icon"><MonitorUp size={21} /></span><div><strong>Aurora<span className="version">{APP_VERSION}</span></strong><small className={`connection ${connected ? 'online' : ''}`}><i />{statusText}</small></div></div>
+    <header className="app-header"><div className="brand"><img className="brand-logo" src="/aurora-logo.png" alt="Aurora" /><div><strong>Aurora<span className="version">{APP_VERSION}</span></strong><small className={`connection ${connected ? 'online' : ''}`}><i />{statusText}</small></div></div>
       <div className="header-room-tools"><nav className="room-switch" aria-label="Salas">{ROOMS.map((item, index) => <button key={item} className={`room-tab ${room === item ? 'selected' : ''}`} aria-pressed={room === item} onClick={() => switchRoom(item)}><span className="room-number">0{index + 1}</span>{item}</button>)}</nav><span className="header-room-spacer" aria-hidden="true" /><button className="button sync icon-only" aria-label={status === 'disconnected' ? 'Reconectar' : 'Atualizar sala'} title={status === 'disconnected' ? 'Reconectar' : 'Atualizar sala'} onClick={() => synchronize()} disabled={syncing || status === 'connecting'}><RefreshCw size={17} className={syncing ? 'spin' : ''} /></button><span className="header-online-count"><Users size={15} />{people.length} online</span></div>
       <div className="header-actions"><button className="button" onClick={copyInvite} disabled={!connected}>{copied ? <Check size={16} /> : <Copy size={16} />}<span>{copied ? 'Link copiado' : 'Convidar'}</span></button><button className="button leave" onClick={() => { disconnect(); setEntered(false); setStatus('idle'); setNotice(''); }}><LogOut size={16} /><span>Sair</span></button></div>
     </header>

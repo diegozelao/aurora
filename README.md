@@ -25,4 +25,4 @@ npm run dev:back
 npm run dev:front
 ```
 
-O front abre com Vite e encaminha o WebSocket para o back na porta 3001. Para produção, execute `npm run build` e depois `npm start`. A versão atual é `0.2.0`.
+O front abre com Vite e encaminha o WebSocket para o back na porta 3001. Para produção, execute `npm run build` e depois `npm start`. A versão atual é `2.0.0`.

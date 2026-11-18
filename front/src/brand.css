@@ -1,0 +1,15 @@
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: 13px;
+  filter: drop-shadow(0 4px 12px #6d35d955);
+}
+
+.entry-card > .brand-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 19px;
+  align-self: flex-start;
+}

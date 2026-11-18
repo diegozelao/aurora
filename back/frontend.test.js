@@ -16,7 +16,7 @@ test('serves the production frontend, health check and SPA fallback', async t =>
   const base = `http://127.0.0.1:${server.address().port}`;
   const health = await fetch(`${base}/health`);
   assert.equal(health.status, 200);
-  assert.deepEqual(await health.json(), { ok: true, version: '0.2.0' });
+  assert.deepEqual(await health.json(), { ok: true, version: '2.0.0' });
 
   const home = await fetch(`${base}/`);
   assert.equal(home.status, 200);
