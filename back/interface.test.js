@@ -59,14 +59,14 @@ test('render, enter, switch without form, sync, media cleanup and sound controls
   await wait(() => b.document.querySelector('audio').muted);
   button(a, 'Compartilhar tela').click(); await wait(() => a.document.querySelector('.presentation'));
   button(a, ROOMS[1]).click();
-  await wait(() => a.document.querySelector('h1')?.textContent === ROOMS[1] && a.document.querySelectorAll('.participant').length === 1);
+  await wait(() => a.document.querySelector('.room-tab.selected')?.textContent.includes(ROOMS[1]) && a.document.querySelectorAll('.participant').length === 1);
   assert.equal(a.document.querySelector('#name'), null, 'Room switching does not return to the entry form');
   assert.equal(a.document.querySelector('.participant strong').textContent, 'Teste A (você)');
   assert.equal(calls.every(stream => stream.track.stopped), true, 'Switching stops mic and screen tracks');
   assert.equal(a.document.querySelector('.presentation'), null);
   await wait(() => b.document.querySelectorAll('.participant').length === 1);
   button(a, 'Atualizar sala').click(); await wait(() => !button(a, 'Atualizar sala')?.disabled);
-  button(a, ROOMS[2]).click(); await wait(() => a.document.querySelector('h1')?.textContent === ROOMS[2] && a.document.querySelector('.participant'));
+  button(a, ROOMS[2]).click(); await wait(() => a.document.querySelector('.room-tab.selected')?.textContent.includes(ROOMS[2]) && a.document.querySelector('.participant'));
   button(a, 'Convidar').click(); await wait(() => a.invite); assert.equal(new URL(a.invite).searchParams.get('room'), ROOMS[2]);
   a.document.querySelector('[aria-label="Silenciar som da sala"]').click();
   await wait(() => a.document.querySelector('[aria-label="Ativar som da sala"]'));
