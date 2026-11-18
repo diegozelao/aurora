@@ -5,6 +5,7 @@ COPY package*.json ./
 COPY front/package*.json front/
 COPY back/package*.json back/
 RUN npm install --include=optional --force
+RUN npm install --no-save --force @rollup/rollup-linux-x64-musl
 
 COPY front front
 COPY back back
