@@ -4,6 +4,7 @@ import { Camera, CameraOff, Check, Copy, LogOut, Maximize2, Minimize2, Mic, MicO
 import { RoomPeers } from './rtc.js';
 import './room.css';
 import './presentation-layout.css';
+import './person-card-layout.css';
 
 export const ROOMS = ['Sala principal', 'Sala de reuniões', 'Sala de apresentação'];
 export const APP_VERSION = '0.2.0';
@@ -34,6 +35,7 @@ export function App() {
   const [local, setLocal] = useState({});
   const [remote, setRemote] = useState({});
   const [focused, setFocused] = useState(null);
+  const [focusedPerson, setFocusedPerson] = useState(null);
   const [pending, setPending] = useState({});
   const [syncing, setSyncing] = useState(false);
   const [sound, setSound] = useState(true);
@@ -169,7 +171,7 @@ export function App() {
           <div className="viewer-controls">{focused === person.id && <button className="icon-button" title="Voltar à grade" aria-label="Voltar à grade" onClick={() => setFocused(null)}><Minimize2 size={17} /></button>}<button className="icon-button" title="Tela cheia" aria-label={`Tela cheia de ${person.name}`} onClick={fullscreen}><Maximize2 size={17} /></button></div>
         </section>)}
       </div>
-      <div className={`people-grid ${presenters.length ? 'compact' : ''}`}>{people.map(person => <article className="person-card" key={person.id}>
+      <div className={`people-grid ${presenters.length ? 'compact' : ''} ${focusedPerson ? 'focused-person-grid' : ''}`}>{people.map(person => <article className={`person-card ${focusedPerson === person.id ? 'focused-person' : ''} ${focusedPerson && focusedPerson !== person.id ? 'person-thumbnail' : ''}`} key={person.id} onClick={() => getStream(person, 'camera') && setFocusedPerson(current => current === person.id ? null : person.id)}>
         {person.media?.camera && getStream(person, 'camera') ? <Media stream={getStream(person, 'camera')} /> : <Avatar name={person.name} />}
         <div className="person-label"><span>{person.name}{person.id === self ? ' (você)' : ''}</span>{person.media?.mic ? <Mic size={14} /> : <MicOff size={14} />}{person.media?.screen && <MonitorUp size={14} />}</div>
       </article>)}</div>

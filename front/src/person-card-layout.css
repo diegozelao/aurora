@@ -1,0 +1,13 @@
+/* Camera cards: square by default, full image visible, focused card with thumbnails. */
+.people-grid:not(.focused-person-grid) .person-card { height: auto; aspect-ratio: 1 / 1; }
+.person-card video { object-fit: contain; background: #07060a; }
+.person-card:has(video) { cursor: pointer; }
+.people-grid.focused-person-grid { grid-template-columns: minmax(0, 1fr) clamp(120px, 18%, 190px); align-items: start; }
+.people-grid.focused-person-grid .person-card { height: auto; aspect-ratio: 1 / 1; min-height: 0; }
+.people-grid.focused-person-grid .person-card.focused-person { grid-column: 1; grid-row: 1 / span 20; order: -1; aspect-ratio: 4 / 3; min-height: clamp(280px, 48vh, 620px); }
+.people-grid.focused-person-grid .person-card.person-thumbnail { grid-column: 2; }
+.people-grid.focused-person-grid .person-thumbnail .person-label { font-size: 9px; bottom: 6px; left: 6px; right: 6px; }
+@media (max-width: 780px) {
+  .people-grid.focused-person-grid { grid-template-columns: minmax(0, 1fr) 92px; gap: 8px; }
+  .people-grid.focused-person-grid .person-card.focused-person { min-height: 240px; }
+}
