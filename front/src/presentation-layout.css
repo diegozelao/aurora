@@ -1,0 +1,61 @@
+/* Connected people: compact square cards with a focused view and right thumbnails. */
+.presentations:not(.focused-grid) .presentation {
+  height: auto;
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+}
+
+.presentations.focused-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(120px, 18%, 190px);
+  grid-auto-rows: min-content;
+  align-items: start;
+  gap: 12px;
+}
+
+.presentations.focused-grid .presentation {
+  height: auto;
+  aspect-ratio: 4 / 3;
+  min-height: 0;
+}
+
+.presentations.focused-grid .presentation.focused {
+  grid-column: 1;
+  grid-row: 1 / span 20;
+  order: -1;
+  aspect-ratio: 16 / 10;
+  min-height: clamp(300px, 48vh, 620px);
+}
+
+.presentations.focused-grid .presentation.thumbnail {
+  grid-column: 2;
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+}
+
+.presentations.focused-grid .presentation.thumbnail .presentation-label {
+  font-size: 9px;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+}
+
+.presentations.focused-grid .presentation.thumbnail .presentation-label .live,
+.presentations.focused-grid .presentation.thumbnail .viewer-controls {
+  display: none;
+}
+
+.presentations.focused-grid .presentation.thumbnail .focus-surface {
+  z-index: 2;
+}
+
+@media (max-width: 780px) {
+  .presentations.focused-grid {
+    grid-template-columns: minmax(0, 1fr) 92px;
+    gap: 8px;
+  }
+
+  .presentations.focused-grid .presentation.focused {
+    min-height: 260px;
+  }
+}

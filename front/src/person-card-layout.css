@@ -1,0 +1,33 @@
+/* Camera cards: square by default, full image visible, focused card with thumbnails. */
+.people-grid:not(.focused-person-grid) .person-card { height: auto; aspect-ratio: 1 / 1; }
+.people-grid:not(.focused-person-grid) .person-card { width: min(100%, 320px); justify-self: start; }
+.person-card video { object-fit: contain; background: #07060a; }
+.person-card:has(video) { cursor: pointer; }
+.people-grid.focused-person-grid { grid-template-columns: minmax(0, 1fr) clamp(120px, 18%, 190px); align-items: start; }
+.people-grid.focused-person-grid .person-card { height: auto; aspect-ratio: 1 / 1; min-height: 0; }
+.people-grid.focused-person-grid .person-card.focused-person { grid-column: 1; grid-row: 1 / span 20; order: -1; aspect-ratio: 4 / 3; min-height: clamp(280px, 48vh, 620px); }
+.people-grid.focused-person-grid .person-card.person-thumbnail { grid-column: 2; }
+.people-grid.focused-person-grid .person-thumbnail .person-label { font-size: 9px; bottom: 6px; left: 6px; right: 6px; }
+@media (max-width: 780px) {
+  .people-grid.focused-person-grid { grid-template-columns: minmax(0, 1fr) 92px; gap: 8px; }
+  .people-grid.focused-person-grid .person-card.focused-person { min-height: 240px; }
+}
+
+/* Room navigation now lives in the top header. */
+.header-room-tools { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.header-room-tools .room-switch { max-width: min(52vw, 760px); overflow-x: auto; flex-wrap: nowrap; }
+.header-room-tools .room-tab { flex-shrink: 0; }
+.header-room-tools .sync { margin-left: 0; }
+.stage > .room-toolbar { display: none; }
+@media (max-width: 1100px) {
+  .header-room-tools { gap: 8px; }
+  .header-room-tools .room-tab { padding: 8px; }
+  .header-room-tools .room-number { display: none; }
+}
+@media (max-width: 780px) {
+  .header-room-tools { order: 3; width: 100%; }
+  .header-room-tools .room-switch { max-width: none; flex: 1; }
+  .header-room-tools .sync { font-size: 0; padding: 10px; }
+  .header-room-tools .sync svg { margin: 0; }
+  .app-header { height: auto; min-height: 78px; flex-wrap: wrap; gap: 10px; padding-top: 12px; padding-bottom: 12px; }
+}
