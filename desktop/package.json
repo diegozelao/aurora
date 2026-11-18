@@ -1,0 +1,16 @@
+{
+  "name": "aurora-desktop",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Aurora — sala de compartilhamento desktop",
+  "main": "main.cjs",
+  "scripts": { "start": "electron .", "check": "node --check main.cjs", "pack": "electron-builder --dir", "dist": "electron-builder" },
+  "devDependencies": { "electron": "^40.0.0", "electron-builder": "^26.0.0" },
+  "build": {
+    "appId": "cloud.ddtech.aurora",
+    "productName": "Aurora",
+    "files": ["main.cjs", "preload.cjs", "permissions.cjs", "picker.cjs", "picker-preload.cjs", "picker.html", "picker.css", "picker.js", "package.json"],
+    "mac": { "target": ["dmg"], "category": "public.app-category.productivity", "extendInfo": { "NSMicrophoneUsageDescription": "Aurora usa seu microfone quando você ativa o áudio para conversar na sala.", "NSCameraUsageDescription": "Aurora usa sua câmera quando você ativa o vídeo na sala." } },
+    "win": { "target": ["nsis"], "signAndEditExecutable": false }
+  }
+}

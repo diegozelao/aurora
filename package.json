@@ -1,0 +1,13 @@
+{
+  "name": "aurora",
+  "private": true,
+  "version": "0.2.0",
+  "workspaces": ["front", "back"],
+  "scripts": {
+    "dev:front": "npm --workspace front run dev",
+    "dev:back": "npm --workspace aurora-back run dev",
+    "build": "npm --workspace front run build",
+    "start": "npm --workspace aurora-back start",
+    "test": "npm --workspace aurora-back test"
+  }
+}
