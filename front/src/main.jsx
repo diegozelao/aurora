@@ -154,13 +154,11 @@ export function App() {
   </form></main>;
   return <main className="app-shell">
     <header className="app-header"><div className="brand"><span className="brand-icon"><MonitorUp size={21} /></span><div><strong>Aurora<span className="version">{APP_VERSION}</span></strong><small className={`connection ${connected ? 'online' : ''}`}><i />{statusText}</small></div></div>
+      <div className="header-room-tools"><nav className="room-switch" aria-label="Salas">{ROOMS.map((item, index) => <button key={item} className={`room-tab ${room === item ? 'selected' : ''}`} aria-pressed={room === item} onClick={() => switchRoom(item)}><span className="room-number">0{index + 1}</span>{item}</button>)}</nav><button className="button sync" onClick={() => synchronize()} disabled={syncing || status === 'connecting'}><RefreshCw size={16} className={syncing ? 'spin' : ''} />{syncing ? 'Atualizando…' : status === 'disconnected' ? 'Reconectar' : 'Atualizar sala'}</button></div>
       <div className="header-actions"><button className="button" onClick={copyInvite} disabled={!connected}>{copied ? <Check size={16} /> : <Copy size={16} />}<span>{copied ? 'Link copiado' : 'Convidar'}</span></button><button className="button leave" onClick={() => { disconnect(); setEntered(false); setStatus('idle'); setNotice(''); }}><LogOut size={16} /><span>Sair</span></button></div>
     </header>
     <div className="workspace"><section className="stage">
-      <div className="room-toolbar"><nav className="room-switch" aria-label="Salas">{ROOMS.map((item, index) => <button key={item} className={`room-tab ${room === item ? 'selected' : ''}`} aria-pressed={room === item} onClick={() => switchRoom(item)}><span className="room-number">0{index + 1}</span>{item}</button>)}</nav>
-        <button className="button sync" onClick={() => synchronize()} disabled={syncing || status === 'connecting'}><RefreshCw size={16} className={syncing ? 'spin' : ''} />{syncing ? 'Atualizando…' : status === 'disconnected' ? 'Reconectar' : 'Atualizar sala'}</button>
-      </div>
-      <div className="heading"><div><p className="eyebrow">SEU ESPAÇO DE COLABORAÇÃO</p><h1>{room}</h1><p className="muted">{presenters.length ? `${presenters.length} compartilhamento(s) em andamento` : 'Compartilhe uma tela ou ative o microfone para conversar.'}</p></div><span className="count"><Users size={15} />{people.length}</span></div>
+      <div className="heading"><div><p className="eyebrow">SEU ESPAÇO DE COLABORAÇÃO</p><p className="muted">{presenters.length ? `${presenters.length} compartilhamento(s) em andamento` : 'Compartilhe uma tela ou ative o microfone para conversar.'}</p></div><span className="count"><Users size={15} />{people.length}</span></div>
       {notice && <div className="notice" role="status">{notice}<button className="icon-button" aria-label="Fechar aviso" onClick={() => setNotice('')}><X size={16} /></button></div>}
       {error && <div className="error" role="alert">{error}<button className="icon-button" aria-label="Fechar erro" onClick={() => setError('')}><X size={16} /></button></div>}
       <div className={`presentations ${focused ? 'focused-grid' : ''}`}>
