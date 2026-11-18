@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY front/package*.json front/
 COPY back/package*.json back/
-RUN npm install
+RUN npm install --include=optional --force
 
 COPY front front
 COPY back back
