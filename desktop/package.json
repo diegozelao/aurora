@@ -1,6 +1,6 @@
 {
   "name": "aurora-desktop",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "private": true,
   "description": "Aurora — sala de compartilhamento desktop",
   "main": "main.cjs",

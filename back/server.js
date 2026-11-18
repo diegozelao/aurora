@@ -19,7 +19,7 @@ export function createRoomServer({ dist = defaultDist } = {}) {
   });
   const update = room => { if (room) members(room).forEach(snapshot); };
   const server = createServer((req, res) => {
-    if (req.url === '/health') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end('{"ok":true,"version":"0.1.5"}'); }
+    if (req.url === '/health') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end('{"ok":true,"version":"0.2.0"}'); }
     let pathname;
     try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); } catch { res.writeHead(400); return res.end(); }
     let file = resolve(dist, '.' + pathname);
@@ -77,5 +77,5 @@ export function createRoomServer({ dist = defaultDist } = {}) {
   return { server, wss };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  createRoomServer().server.listen(Number(process.env.PORT || 3001), '0.0.0.0', () => console.log('Aurora Rooms 0.1.5 listening'));
+  createRoomServer().server.listen(Number(process.env.PORT || 3001), '0.0.0.0', () => console.log('Aurora Rooms 0.2.0 listening'));
 }

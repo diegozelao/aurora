@@ -1,12 +1,12 @@
 // Each participant has one peer connection; media stream IDs distinguish sources.
 export class RoomPeers {
-  constructor({ self, send, onStream, onRemove, onError, Peer = RTCPeerConnection }) {
-    Object.assign(this, { self, send, onStream, onRemove, onError, Peer });
+  constructor({ self, send, onStream, onRemove, onError, iceServers, Peer = RTCPeerConnection }) {
+    Object.assign(this, { self, send, onStream, onRemove, onError, iceServers, Peer });
     this.peers = new Map(); this.local = new Map(); this.closed = false;
   }
   ensure(id) {
     if (this.peers.has(id)) return this.peers.get(id);
-    const pc = new this.Peer({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    const pc = new this.Peer({ iceServers: this.iceServers || [{ urls: 'stun:stun.l.google.com:19302' }] });
     const state = { pc, makingOffer: false, ignoreOffer: false, settingAnswer: false, candidates: [], queue: Promise.resolve() };
     this.peers.set(id, state);
     pc.ontrack = event => {
