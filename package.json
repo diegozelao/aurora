@@ -1,8 +1,11 @@
 {
   "name": "aurora",
   "private": true,
-  "version": "0.2.0",
-  "workspaces": ["front", "back"],
+  "version": "2.0.0",
+  "workspaces": [
+    "front",
+    "back"
+  ],
   "scripts": {
     "dev:front": "npm --workspace front run dev",
     "dev:back": "npm --workspace aurora-back run dev",
