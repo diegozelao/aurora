@@ -3,6 +3,7 @@ node_modules/
 front/dist/
 desktop/dist/
 desktop/release/
+desktop-tauri/target/
 .DS_Store
 
 # Local configuration and secrets
