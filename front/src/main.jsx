@@ -43,6 +43,7 @@ export function App() {
   const [notice, setNotice] = useState('');
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState('');
+  const chatMessagesRef = useRef(null);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const socket = useRef(null), rtc = useRef(null), activeRoom = useRef(room), sources = useRef({}), generation = useRef(0), syncTimer = useRef(), connectTimer = useRef(), copyTimer = useRef(), busy = useRef(new Set());
@@ -109,6 +110,7 @@ export function App() {
     document.addEventListener('visibilitychange', visible);
     return () => { clearInterval(timer); document.removeEventListener('visibilitychange', visible); clearTimeout(syncTimer.current); clearTimeout(connectTimer.current); clearTimeout(copyTimer.current); socket.current?.close(); rtc.current?.close(); Object.values(sources.current).forEach(stopTracks); };
   }, []);
+  useEffect(() => { const container = chatMessagesRef.current; if (container) container.scrollTop = container.scrollHeight; }, [messages]);
   function switchRoom(target) {
     if (target === room) return;
     setNotice(`Entrando em ${target.toLowerCase()}. Microfone, câmera e tela foram desligados.`);
@@ -183,7 +185,7 @@ export function App() {
     <aside className="participants"><section className="participants-section"><div className="aside-title"><h2>Na sala <span>{people.length}</span></h2><Users size={18} /></div><div className="participants-list">
       {people.map(person => <div className="participant" key={person.id}><Avatar name={person.name} /><div><strong>{person.name}{person.id === self ? ' (você)' : ''}</strong><small>{person.media?.screen ? 'Compartilhando tela' : person.media?.mic ? 'Microfone ligado' : 'Microfone desligado'}</small></div>{person.media?.screen && <MonitorUp size={16} className="purple" />}</div>)}
       {people.length === 1 && <p className="alone muted">Convide alguém pelo link desta sala.</p>}</div></section>
-      <section className="chat-panel"><div className="aside-title"><h2>Mensagens</h2></div><div className="chat-messages">{messages.map((message, index) => <div className={`chat-message ${message.from === self ? 'mine' : ''}`} key={`${message.at}-${index}`}><strong>{message.name}</strong><p>{message.text}</p></div>)}</div><form className="chat-form" onSubmit={sendChat}><div className="chat-composer"><input value={messageText} onChange={event => setMessageText(event.target.value)} maxLength={1000} placeholder="Digite uma mensagem…" aria-label="Mensagem" disabled={!connected} /><button className="send-message" type="submit" aria-label="Enviar mensagem" title="Enviar mensagem" disabled={!connected || !messageText.trim()}><Send size={16} /></button></div></form></section>
+      <section className="chat-panel"><div ref={chatMessagesRef} className="chat-messages">{messages.map((message, index) => <div className={`chat-message ${message.from === self ? 'mine' : ''}`} key={`${message.at}-${index}`}><strong>{message.name}</strong><p>{message.text}</p></div>)}</div><form className="chat-form" onSubmit={sendChat}><div className="chat-composer"><input value={messageText} onChange={event => setMessageText(event.target.value)} maxLength={1000} placeholder="Digite uma mensagem…" aria-label="Mensagem" disabled={!connected} /><button className="send-message" type="submit" aria-label="Enviar mensagem" title="Enviar mensagem" disabled={!connected || !messageText.trim()}><Send size={16} /></button></div></form></section>
     </aside></div>
     <footer className="control-bar"><div className="output-controls"><button className={`control ${!sound ? 'off' : ''}`} aria-label={sound ? 'Silenciar som da sala' : 'Ativar som da sala'} aria-pressed={!sound} onClick={() => setSound(value => !value)}>{sound ? <Volume2 size={19} /> : <VolumeX size={19} />}</button><label htmlFor="volume">Volume <span>{Math.round(volume * 100)}%</span><input id="volume" type="range" min="0" max="100" value={Math.round(volume * 100)} onChange={event => setVolume(Number(event.target.value) / 100)} /></label></div>
       <div className="media-controls"><button className={`control ${local.mic ? 'active' : 'off'}`} disabled={!connected || pending.mic} aria-pressed={Boolean(local.mic)} onClick={() => toggleSource('mic')}>{local.mic ? <Mic size={19} /> : <MicOff size={19} />}<span>{pending.mic ? 'Aguardando…' : local.mic ? 'Desligar mic' : 'Ativar mic'}</span></button>

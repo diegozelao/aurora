@@ -8,9 +8,9 @@
 /* Keep chat history scrollable while the composer stays at the bottom. */
 .participants { min-height: 0; overflow: hidden; }
 .participants-section, .chat-panel { min-height: 0; display: flex; flex-direction: column; }
-.participants-section { flex: 0 1 48%; }
-.chat-panel { flex: 1 1 52%; min-height: 220px; }
-.chat-messages { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.participants-section { flex: 0 1 30%; }
+.chat-panel { flex: 1 1 70%; min-height: 220px; }
+.chat-messages { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; justify-content: flex-end; }
 .chat-form { flex: 0 0 auto; margin-top: auto; }
 .chat-composer { display: flex; align-items: center; gap: 7px; padding: 5px; border: 1px solid #514064; border-radius: 13px; background: #17121f; box-shadow: inset 0 1px 0 #ffffff08, 0 8px 20px #0002; transition: border-color .2s, box-shadow .2s; }
 .chat-composer:focus-within { border-color: #a987e5; box-shadow: 0 0 0 3px #a987e522, inset 0 1px 0 #ffffff0a; }
