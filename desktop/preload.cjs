@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 // The hosted renderer receives no Node.js or unrestricted IPC capability.
-if (location.origin === 'https://test.ddtech.cloud') {
+if (location.origin === 'https://aurora.ddtech.cloud') {
   window.addEventListener('aurora-capture-failure', (event) => {
     const code = String(event.detail || 'UnknownError');
     if (/^[A-Za-z]{1,64}$/.test(code)) ipcRenderer.send('capture-failure', code);

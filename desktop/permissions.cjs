@@ -1,4 +1,4 @@
-const trusted = (url) => { try { return new URL(url).origin === 'https://test.ddtech.cloud'; } catch { return false; } };
+const trusted = (url) => { try { return new URL(url).origin === 'https://aurora.ddtech.cloud'; } catch { return false; } };
 function check(permission, origin) {
   return trusted(origin) && ['media', 'display-capture', 'fullscreen'].includes(permission);
 }

@@ -70,7 +70,7 @@ A aplicação foi ajustada para rodar em Docker de forma que o conteúdo do fron
 
 ## Estado atual
 A aplicação está funcionando em produção no domínio:
-- https://test.ddtech.cloud/
+- https://aurora.ddtech.cloud/
 
 O deploy foi validado com:
 - build do Vite concluído com sucesso
@@ -90,4 +90,4 @@ O deploy foi validado com:
   6. fallback para salas com múltiplos participantes em rede real
 
 ## Resumo executivo para codex
-"Transformar a landing page em uma sala de conferência minimalista, com modal de entrada por nome, interface em dark mode inspirada em Discord, comunicação dinâmica via WebSocket, e compartilhamento de tela funcional usando getDisplayMedia/WebRTC. O build foi integrado ao Docker e o serviço foi publicado em test.ddtech.cloud com reverse proxy Nginx e healthcheck ajustado."
+"Transformar a landing page em uma sala de conferência minimalista, com modal de entrada por nome, interface em dark mode inspirada em Discord, comunicação dinâmica via WebSocket, e compartilhamento de tela funcional usando getDisplayMedia/WebRTC. O build foi integrado ao Docker e o serviço foi publicado em aurora.ddtech.cloud com reverse proxy Nginx e healthcheck ajustado."

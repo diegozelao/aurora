@@ -1,6 +1,6 @@
 # Aurora Desktop — protótipo 0.1
 
-Cliente Electron para macOS e Windows. Carrega a interface noturna real de https://test.ddtech.cloud/ e usa a sinalização WSS já publicada. Não inclui participantes fictícios nem altera o servidor.
+Cliente Electron para macOS e Windows. Carrega a interface noturna real de https://aurora.ddtech.cloud/ e usa a sinalização WSS já publicada. Não inclui participantes fictícios nem altera o servidor.
 
 ## Executar
 

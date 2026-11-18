@@ -2,7 +2,7 @@ const { app, BrowserWindow, session, dialog, systemPreferences, ipcMain } = requ
 const path = require('node:path');
 const permissions = require('./permissions.cjs');
 const { chooseSource } = require('./picker.cjs');
-const ROOM_URL = 'https://test.ddtech.cloud/';
+const ROOM_URL = 'https://aurora.ddtech.cloud/';
 const trusted = (url) => { try { return new URL(url).origin === new URL(ROOM_URL).origin; } catch { return false; } };
 
 async function createWindow() {
