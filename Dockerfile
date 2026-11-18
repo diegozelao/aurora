@@ -18,7 +18,7 @@ ENV PORT=80
 
 COPY package*.json ./
 COPY back/package*.json back/
-RUN cd back && npm install --omit=dev
+RUN cd back && npm install --omit=dev --workspaces=false
 
 COPY --from=build /app/back/server.js ./back/server.js
 COPY --from=build /app/front/dist ./front/dist
