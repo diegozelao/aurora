@@ -1,4 +1,4 @@
-# Aurora 0.1.5
+# Aurora 0.2.0
 
 O aplicativo continua carregando a interface publicada em https://test.ddtech.cloud/.
 

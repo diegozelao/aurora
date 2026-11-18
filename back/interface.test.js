@@ -11,7 +11,7 @@ const wait = async condition => { for (let i = 0; i < 150; i++) { if (condition(
 test('render, enter, switch without form, sync, media cleanup and sound controls', async t => {
   const { server, wss } = createRoomServer(); server.listen(0, '127.0.0.1'); await once(server, 'listening');
   const url = `http://127.0.0.1:${server.address().port}/`;
-  const compiled = await build({ entryPoints: [fileURLToPath(new URL('../front/src/main.jsx', import.meta.url))], bundle: true, write: false, format: 'iife', jsx: 'automatic', loader: { '.css': 'empty' }, define: { 'import.meta.env.VITE_WS_URL': 'undefined', 'process.env.NODE_ENV': '"production"' } });
+  const compiled = await build({ entryPoints: [fileURLToPath(new URL('../front/src/main.jsx', import.meta.url))], bundle: true, write: false, format: 'iife', jsx: 'automatic', loader: { '.css': 'empty' }, define: { 'import.meta.env.VITE_WS_URL': 'undefined', 'import.meta.env.VITE_ICE_SERVERS': 'undefined', 'process.env.NODE_ENV': '"production"' } });
   const errors = [], calls = [], windows = [], sockets = [];
   t.after(async () => { windows.forEach(w => w.close()); sockets.forEach(ws => ws.terminate()); for (const ws of wss.clients) ws.terminate(); wss.close(); await new Promise(r => server.close(r)); });
   function browser() {

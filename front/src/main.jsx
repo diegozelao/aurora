@@ -5,6 +5,13 @@ import { RoomPeers } from './rtc.js';
 import './room.css';
 
 export const ROOMS = ['Sala principal', 'Sala de reuniões', 'Sala de apresentação'];
+export const APP_VERSION = '0.2.0';
+const iceServers = (() => {
+  const value = import.meta.env.VITE_ICE_SERVERS;
+  if (!value) return [{ urls: 'stun:stun.l.google.com:19302' }];
+  try { const parsed = JSON.parse(value); return Array.isArray(parsed) && parsed.length ? parsed : [{ urls: 'stun:stun.l.google.com:19302' }]; }
+  catch { return [{ urls: 'stun:stun.l.google.com:19302' }]; }
+})();
 const initialRoom = () => { const value = new URLSearchParams(location.search).get('room'); return ROOMS.includes(value) ? value : ROOMS[0]; };
 const stopTracks = stream => stream?.getTracks().forEach(track => { track.onended = null; track.stop(); });
 function Avatar({ name }) { return <span className="avatar" aria-hidden="true">{name.trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase()}</span>; }
@@ -68,7 +75,7 @@ export function App() {
         clearTimeout(connectTimer.current); clearTimeout(syncTimer.current);
         setStatus('connected'); setSyncing(false); setSelf(message.self);
         if (!rtc.current) rtc.current = new RoomPeers({
-          self: message.self, send: transmit,
+          self: message.self, send: transmit, iceServers,
           onStream: (id, stream) => setRemote(current => ({ ...current, [id]: { ...current[id], [stream.id]: stream } })),
           onRemove: (id, streamId) => setRemote(current => { const next = { ...current }; if (streamId) { next[id] = { ...next[id] }; delete next[id][streamId]; } else delete next[id]; return next; }),
           onError: e => setError(`Falha na conexão de mídia: ${e.message}`)
@@ -118,7 +125,7 @@ export function App() {
       rtc.current.setSource(kind, stream); sources.current[kind] = stream;
       stream.getTracks().forEach(track => { track.onended = () => { if (sources.current[kind] === stream) stopSource(kind); }; });
       setLocal({ ...sources.current }); publishMedia();
-    } catch (e) { stopTracks(stream); if (token === generation.current) setError(`Não foi possível ativar ${kind === 'screen' ? 'o compartilhamento' : kind === 'mic' ? 'o microfone' : 'a câmera'} [${e.name}]: ${e.message}`); }
+    } catch (e) { stopTracks(stream); if (token === generation.current) { const label = kind === 'screen' ? 'o compartilhamento' : kind === 'mic' ? 'o microfone' : 'a câmera'; const reason = e.name === 'NotAllowedError' ? 'A permissão foi negada.' : e.name === 'NotFoundError' ? 'Nenhum dispositivo compatível foi encontrado.' : e.message; setError(`Não foi possível ativar ${label} ${reason}`); } }
     finally { if (token === generation.current) { busy.current.delete(kind); setPending(current => ({ ...current, [kind]: false })); } }
   }
   async function copyInvite() {
@@ -143,7 +150,7 @@ export function App() {
     <button className="primary" type="submit" disabled={!name.trim()}>Entrar na sala</button><small className="muted">Microfone e câmera começam desligados.</small>
   </form></main>;
   return <main className="app-shell">
-    <header className="app-header"><div className="brand"><span className="brand-icon"><MonitorUp size={21} /></span><div><strong>Aurora<span className="version">0.1.5</span></strong><small className={`connection ${connected ? 'online' : ''}`}><i />{statusText}</small></div></div>
+    <header className="app-header"><div className="brand"><span className="brand-icon"><MonitorUp size={21} /></span><div><strong>Aurora<span className="version">{APP_VERSION}</span></strong><small className={`connection ${connected ? 'online' : ''}`}><i />{statusText}</small></div></div>
       <div className="header-actions"><button className="button" onClick={copyInvite} disabled={!connected}>{copied ? <Check size={16} /> : <Copy size={16} />}<span>{copied ? 'Link copiado' : 'Convidar'}</span></button><button className="button leave" onClick={() => { disconnect(); setEntered(false); setStatus('idle'); setNotice(''); }}><LogOut size={16} /><span>Sair</span></button></div>
     </header>
     <div className="workspace"><section className="stage">
