@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Camera, CameraOff, Check, Copy, LogOut, Maximize2, Minimize2, Mic, MicOff, MonitorUp, RefreshCw, Users, Volume2, VolumeX, X } from 'lucide-react';
 import { RoomPeers } from './rtc.js';
 import './room.css';
+import './presentation-layout.css';
 
 export const ROOMS = ['Sala principal', 'Sala de reuniões', 'Sala de apresentação'];
 export const APP_VERSION = '0.2.0';
@@ -161,9 +162,9 @@ export function App() {
       {notice && <div className="notice" role="status">{notice}<button className="icon-button" aria-label="Fechar aviso" onClick={() => setNotice('')}><X size={16} /></button></div>}
       {error && <div className="error" role="alert">{error}<button className="icon-button" aria-label="Fechar erro" onClick={() => setError('')}><X size={16} /></button></div>}
       <div className={`presentations ${focused ? 'focused-grid' : ''}`}>
-        {presenters.map(person => <section key={person.id} className={`presentation ${focused === person.id ? 'focused' : ''}`} hidden={Boolean(focused && focused !== person.id)} aria-label={`Tela de ${person.name}`}>
+        {presenters.map(person => <section key={person.id} className={`presentation ${focused === person.id ? 'focused' : ''} ${focused && focused !== person.id ? 'thumbnail' : ''}`} aria-label={`Tela de ${person.name}`}>
           {getStream(person, 'screen') ? <Media stream={getStream(person, 'screen')} /> : <div className="stream-wait"><MonitorUp size={30} /><p>Conectando à tela de {person.name}…</p></div>}
-          <button className="focus-surface" aria-label={`Ampliar tela de ${person.name}`} onClick={() => setFocused(person.id)} />
+          <button className="focus-surface" aria-label={focused === person.id ? `Reduzir tela de ${person.name}` : `Ampliar tela de ${person.name}`} aria-expanded={focused === person.id} onClick={() => setFocused(current => current === person.id ? null : person.id)} />
           <div className="presentation-label"><span>{person.name}{person.id === self ? ' (você)' : ''}</span><span className="live"><MonitorUp size={13} />Compartilhando</span></div>
           <div className="viewer-controls">{focused === person.id && <button className="icon-button" title="Voltar à grade" aria-label="Voltar à grade" onClick={() => setFocused(null)}><Minimize2 size={17} /></button>}<button className="icon-button" title="Tela cheia" aria-label={`Tela cheia de ${person.name}`} onClick={fullscreen}><Maximize2 size={17} /></button></div>
         </section>)}
