@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Aurora",
+  "version": "2.0.0",
+  "identifier": "cloud.ddtech.aurora",
+  "build": {
+    "beforeDevCommand": "VITE_WS_URL=wss://aurora.ddtech.cloud/ws npm --prefix front run dev -- --host 127.0.0.1 --port 1420",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "VITE_WS_URL=wss://aurora.ddtech.cloud/ws npm --prefix front run build",
+    "frontendDist": "../front/dist"
+  },
+  "app": {
+    "windows": [{
+      "title": "Aurora",
+      "width": 1440,
+      "height": 900,
+      "minWidth": 960,
+      "minHeight": 640,
+      "resizable": true
+    }],
+    "security": { "csp": null }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Productivity",
+    "shortDescription": "Salas de colaboração Aurora",
+    "longDescription": "Compartilhe tela, câmera e áudio em salas Aurora.",
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "13.0",
+      "infoPlist": "Info.plist"
+    },
+    "windows": { "webviewInstallMode": { "type": "embedBootstrapper" } }
+  }
+}
+

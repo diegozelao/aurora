@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Aurora usa sua câmera quando você ativa o vídeo na sala.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Aurora usa seu microfone quando você ativa o áudio na sala.</string>
+    <key>NSScreenCaptureDescription</key>
+    <string>Aurora usa a captura de tela quando você compartilha uma tela ou janela.</string>
+    <key>NSScreenCaptureUsageDescription</key>
+    <string>Aurora precisa acessar a tela para compartilhar janelas, aplicativos e áudio.</string>
+</dict>
+</plist>

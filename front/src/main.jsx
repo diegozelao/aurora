@@ -19,6 +19,7 @@ const iceServers = (() => {
 const initialRoom = () => { const value = new URLSearchParams(location.search).get('room'); return ROOMS.includes(value) ? value : ROOMS[0]; };
 const stopTracks = stream => stream?.getTracks().forEach(track => { track.onended = null; track.stop(); });
 const runningInTauri = () => Boolean(window.__TAURI_INTERNALS__);
+const savedName = () => { try { return localStorage.getItem('aurora.profile.name') || ''; } catch { return ''; } };
 function Avatar({ name }) { return <span className="avatar" aria-hidden="true">{name.trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase()}</span>; }
 function Media({ stream, audio = false, muted = true, volume = 1 }) {
   const ref = useRef(); const [blocked, setBlocked] = useState(false);
@@ -29,7 +30,8 @@ function Media({ stream, audio = false, muted = true, volume = 1 }) {
 }
 
 export function App() {
-  const [name, setName] = useState('');
+  const [name, setName] = useState(savedName);
+  const [sessionReady, setSessionReady] = useState(false);
   const [room, setRoom] = useState(initialRoom);
   const [entered, setEntered] = useState(false);
   const [status, setStatus] = useState('idle');
@@ -49,7 +51,8 @@ export function App() {
   const chatMessagesRef = useRef(null);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
-  const socket = useRef(null), rtc = useRef(null), activeRoom = useRef(room), sources = useRef({}), generation = useRef(0), syncTimer = useRef(), connectTimer = useRef(), copyTimer = useRef(), busy = useRef(new Set());
+  const [editingName, setEditingName] = useState(false);
+  const socket = useRef(null), rtc = useRef(null), activeRoom = useRef(room), sources = useRef({}), generation = useRef(0), syncTimer = useRef(), connectTimer = useRef(), copyTimer = useRef(), busy = useRef(new Set()), restoredSession = useRef(false);
 
   function transmit(data) {
     if (socket.current?.readyState !== WebSocket.OPEN) return false;
@@ -69,6 +72,7 @@ export function App() {
     resetMedia(); setMessages([]); setSyncing(false);
   }
   function connect(target = room) {
+    const profile = name.trim().slice(0, 32); try { if (profile) localStorage.setItem('aurora.profile.name', profile); } catch {}
     disconnect(); activeRoom.current = target; setRoom(target); setEntered(true); setStatus('connecting'); setError('');
     const url = new URL(location.href); url.searchParams.set('room', target); history.replaceState(null, '', url);
     const endpoint = import.meta.env.VITE_WS_URL || `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`;
@@ -102,6 +106,13 @@ export function App() {
       resetMedia(); setSyncing(false); setStatus('disconnected'); setNotice('Você foi desconectado. Suas capturas foram encerradas.');
     };
   }
+  useEffect(() => {
+    if (restoredSession.current || entered) return;
+    restoredSession.current = true;
+    const remembered = savedName();
+    if (remembered) { setName(remembered); connect(ROOMS[0]); }
+    setSessionReady(true);
+  }, []);
   function synchronize(manual = true) {
     if (socket.current?.readyState !== WebSocket.OPEN) { if (manual) connect(activeRoom.current); return; }
     if (manual) { setError(''); setSyncing(true); rtc.current?.retry(); clearTimeout(syncTimer.current); syncTimer.current = setTimeout(() => { setSyncing(false); setError('A sala não respondeu. Tente reconectar.'); }, 6000); }
@@ -126,6 +137,7 @@ export function App() {
     connect(target);
   }
   function sendChat(event) { event.preventDefault(); const text = messageText.trim(); if (!text || !transmit({ type: 'chat', text })) return; setMessageText(''); }
+  function saveName(event) { event.preventDefault(); const next = name.trim().slice(0, 32); if (!next) return; setName(next); try { localStorage.setItem('aurora.profile.name', next); } catch {} setEditingName(false); }
   function stopSource(kind) {
     const stream = sources.current[kind]; if (!stream) return;
     rtc.current?.setSource(kind, null); stopTracks(stream); delete sources.current[kind];
@@ -187,6 +199,7 @@ export function App() {
   const getStream = (person, kind) => person.id === self ? local[kind] : remote[person.id]?.[person.media?.[kind]];
   const statusText = connected ? 'Conectado' : status === 'connecting' ? 'Conectando…' : 'Desconectado';
 
+  if (!sessionReady) return <main className="loading-screen"><div className="loading-card"><img className="loading-logo" src="/aurora-logo.png" alt="Aurora" /><span className="loading-orbit" aria-hidden="true" /><strong>Aurora</strong><small>Restaurando sua sala…</small></div></main>;
   if (!entered) return <main className="entry"><form className="entry-card" onSubmit={event => { event.preventDefault(); if (name.trim()) connect(); }}>
     <img className="brand-logo" src="/aurora-logo.png" alt="Aurora" /><p className="eyebrow">AURORA ROOMS</p><h1>Um espaço para<br />compartilhar ideias.</h1><p className="muted">Entre com seu nome e escolha onde conversar.</p>
     <label htmlFor="name">Seu nome</label><input id="name" value={name} onChange={event => setName(event.target.value)} autoFocus maxLength={32} placeholder="Como podemos chamar você?" required />
@@ -196,7 +209,7 @@ export function App() {
   return <main className="app-shell">
     <header className="app-header"><div className="brand"><img className="brand-logo" src="/aurora-logo.png" alt="Aurora" /><div><strong>Aurora<span className="version">{APP_VERSION}</span></strong><small className={`connection ${connected ? 'online' : ''}`}><i />{statusText}</small></div></div>
       <div className="header-room-tools"><nav className="room-switch" aria-label="Salas">{ROOMS.map((item, index) => <button key={item} className={`room-tab ${room === item ? 'selected' : ''}`} aria-pressed={room === item} onClick={() => switchRoom(item)}><span className="room-number">0{index + 1}</span>{item}</button>)}</nav><span className="header-room-spacer" aria-hidden="true" /><button className="button sync icon-only" aria-label={status === 'disconnected' ? 'Reconectar' : 'Atualizar sala'} title={status === 'disconnected' ? 'Reconectar' : 'Atualizar sala'} onClick={() => synchronize()} disabled={syncing || status === 'connecting'}><RefreshCw size={17} className={syncing ? 'spin' : ''} /></button><span className="header-online-count"><Users size={15} />{people.length} online</span></div>
-      <div className="header-actions"><button className="button" onClick={copyInvite} disabled={!connected}>{copied ? <Check size={16} /> : <Copy size={16} />}<span>{copied ? 'Link copiado' : 'Convidar'}</span></button><button className="button leave" onClick={() => { disconnect(); setEntered(false); setStatus('idle'); setNotice(''); }}><LogOut size={16} /><span>Sair</span></button></div>
+      <div className="header-actions"><button className="button" onClick={copyInvite} disabled={!connected}>{copied ? <Check size={16} /> : <Copy size={16} />}<span>{copied ? 'Link copiado' : 'Convidar'}</span></button><button className="button leave" onClick={() => { disconnect(); setEntered(false); setStatus('idle'); setNotice(''); }}><LogOut size={16} /><span>Sair</span></button><div className="profile-menu"><button className="profile-button" aria-label="Editar nome" title="Editar nome" onClick={() => setEditingName(value => !value)}><Avatar name={name || 'Aurora'} /></button>{editingName && <form className="profile-editor" onSubmit={saveName}><label htmlFor="profile-name">Seu nome</label><input id="profile-name" value={name} onChange={event => setName(event.target.value)} maxLength={32} autoFocus /><button className="primary" type="submit" disabled={!name.trim()}>Salvar nome</button></form>}</div></div>
     </header>
     <div className="workspace"><section className="stage">
       {notice && <div className="notice" role="status">{notice}<button className="icon-button" aria-label="Fechar aviso" onClick={() => setNotice('')}><X size={16} /></button></div>}
