@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:; connect-src 'none'"><title>Aurora — Escolher fonte</title><link rel="stylesheet" href="picker.css"></head>
+<body><header><p>AURORA · COMPARTILHAR</p><h1>O que você quer apresentar?</h1><span>Escolha um monitor inteiro ou uma janela de aplicativo.</span></header>
+<nav aria-label="Tipo de fonte"><button data-kind="screen" aria-pressed="true">Monitores</button><button data-kind="window" aria-pressed="false">Janelas e aplicativos</button><button id="refresh">Atualizar lista</button></nav>
+<p id="status" role="status">Carregando fontes…</p><main id="sources" aria-label="Fontes disponíveis"></main>
+<footer><span>Somente vídeo. A captura começa após confirmar.</span><button id="cancel">Cancelar</button><button id="confirm" disabled>Compartilhar</button></footer><script src="picker.js"></script></body></html>
